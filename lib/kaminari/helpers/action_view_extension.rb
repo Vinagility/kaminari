@@ -88,16 +88,14 @@ module Kaminari
     def page_entries_info(collection, options = {})
       entry_name = if options[:entry_name]
         options[:entry_name]
-      elsif collection.empty? || collection.is_a?(PaginatableArray)
-        'entry'
-      else
-        if collection.respond_to? :model  # DataMapper
-          collection.model.model_name.human.downcase
-        else  # AR
-          collection.model_name.human.downcase
-        end
+      elsif collection.respond_to? :model  # DataMapper
+          collection.model.model_name.human(:count => collection.total_count).downcase
+      elsif collection.respond_to? :model_name  # AR
+        collection.model_name.human(:count => collection.total_count).downcase
+      elsif collection.is_a?(PaginatableArray)
+        entry_name = 'entry'
+        entry_name.pluralize unless collection.total_count == 1
       end
-      entry_name = entry_name.pluralize unless collection.total_count == 1
 
       if collection.total_pages < 2
         t('helpers.page_entries_info.one_page.display_entries', :entry_name => entry_name, :count => collection.total_count)
